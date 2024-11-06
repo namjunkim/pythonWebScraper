@@ -11,16 +11,27 @@ soup = BeautifulSoup(response.content, "html.parser",)
 jobs = soup.find("section", class_="jobs").find_all("li")[1:-1]
 #print(jobs)
 
+all_jobs = []
+
 for job in jobs:
     title = job.find("span", class_="title").text
     #region = job.find("span", class_="region").text
     company, position, region = job.find_all("span", class_="company")
-    company = company.text
-    position = position.text
-    region = region.text
-    print(title, company, position, region)
-    #print(title, "-----", region)
+    url  = job.find("div", class_="tooltip--flag-logo").next_sibling["href"] #next_sibling : next element
+    #position = position.text
+    #region = region.text
+    #print(title, company, position, region)
+    job_data = {
+        "title":title,
+        "company":company,
+        "position":position,
+        "region":region,
+        "url":f"https://weworkremotely.com{url}"
+    }
+    all_jobs.append(job_data)
 
+    #print(title, "-----", region)
+print(all_jobs)
 #a = [1,2,3,4,5,6,7,8,9]
 #b =a[1]
 #c = a[0:5] #start 0 to before 5
