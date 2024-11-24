@@ -7,9 +7,9 @@ response = requests.get(url)
 #print(response.content)
 
 soup = BeautifulSoup(response.content, "html.parser",)
-
+#jobss = soup.find("section")
 jobs = soup.find("section", class_="jobs").find_all("li")[1:-1]
-#print(jobs)
+print(jobs)
 
 all_jobs = []
 
