@@ -3,69 +3,85 @@ import time
 from bs4 import BeautifulSoup
 import csv
 
-p = sync_playwright().start()
+keywords = [
+    "java",
+    "python",
+    "ai"
 
-browser = p.chromium.launch(headless=False)
-page = browser.new_page()
+]
 
-page.goto("https://google.com")
 
-page.screenshot(path="screenshot.png")
 
-browser = p.chromium.launch(headless=True) #chromium 대신 firefox, safari등 가능
+def downloadCvs(keyword):
+    p = sync_playwright().start()
 
-page = browser.new_page() #새탭 열기
+    browser = p.chromium.launch(headless=False)
+    page = browser.new_page()
 
-page.goto("https://www.wanted.co.kr/search?query=flutter")
+    #page.goto("https://google.com")
 
-time.sleep(3)
+    #page.screenshot(path="screenshot.png")
 
-page.click("button.Aside_searchButton__Xhqq3")
+    browser = p.chromium.launch(headless=True) #chromium 대신 firefox, safari등 가능
 
-time.sleep(5)
+    #page = browser.new_page() #새탭 열기
 
-page.get_by_placeholder("검색어를 입력해 주세요.").fill("flutter")
 
-time.sleep(5)
+    page.goto("https://www.wanted.co.kr/")
+    #page.goto("https://www.wanted.co.kr/search?query=flutter")
 
-page.keyboard.down("Enter")
+    #time.sleep(3)
 
-time.sleep(5)
+    page.click("button.Aside_searchButton__rajGo")
 
-page.click("a#search_tab_position")
+    #time.sleep(5)
 
-time.sleep(2)
+    page.get_by_placeholder("검색어를 입력해 주세요.").fill(keyword)
 
-for x in range(5) :
-    page.keyboard.down("End")
+    #time.sleep(5)
+
+    page.keyboard.down("Enter")
+
+    #time.sleep(5)
+
+    page.click("a#search_tab_position")
+
     time.sleep(2)
 
-content = page.content()
+    #for x in range(5) :
+    #    page.keyboard.down("End")
+    #    time.sleep(2)
 
-p.stop()
+    content = page.content()
 
-soup = BeautifulSoup(content, "html.parser")
+    p.stop()
 
-jobs = soup.find_all("div", clase_="JobCard_container__FqChn")
+    soup = BeautifulSoup(content, "html.parser")
+
+    jobs = soup.find_all("div", "JobCard_content__jt_Jf")
+    links = soup.find_all("div", "JobCard_container__REty8")
+
+    jobs_db = []
 
 
-jobs_db = []
+    for job in jobs:
+        #link = job.find("img")["src"]
+        title = job.find("strong", class_="JobCard_title__HBpZf").contents
+        company_name = job.find("span", class_="JobCard_companyName__N1YrF").contents
+        job_data = {
+            "title":title,
+            "company":company_name,
+            "url":"www.www"
+        }
+        jobs_db.append(job_data)
+
+    file = open(f"{keyword}_jobs.csv", "w")
+    writter = csv.writer(file)
+    writter.writerow(["title","company","url"])
+
+    for job in jobs_db:
+        writter.writerow(job.values())
 
 
-for job in jobs:
-    link = job.find("a")["href"]
-    title = job.find("strong", class_="JobCard_title__ddkwM")
-    company_name = job.fine("span", class_="JobCard_companyName__vZMqJ")
-    job_data = {
-        "title":title,
-        "company":company_name,
-        "url":link
-    }
-    jobs_db.append(job_data)
-
-file = open("jobs.csv", "w")
-writter = csv.writer(file)
-writter.writerow(["title","company","url"])
-
-for job in jobs_db:
-    writter.writerow(job.values())
+for keyword in keywords:
+    downloadCvs(keyword)
