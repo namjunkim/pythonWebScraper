@@ -1,9 +1,14 @@
 import pygame
 import random
 import sys
+import time
 
 # 초기화
 pygame.init()
+
+# 배경 음악 로드
+pygame.mixer.music.load('back_sound_1.wav')  # 배경 음악 파일명
+pygame.mixer.music.play(-1)  # 음악을 무한 반복 재생
 
 # 화면 설정
 screen_width, screen_height = 800, 600
@@ -18,7 +23,17 @@ bullet_speed = 10
 enemy_speed = 2
 
 # 플레이어 설정
-player = pygame.Rect(screen_width // 2, screen_height - 50, 50, 50)
+#player = pygame.Rect(screen_width // 2, screen_height - 50, 50, 50)
+# 플레이어 이미지 로드
+player = pygame.image.load('531_plane.png')  # 'player.png'는 사용할 이미지 파일의 이름입니다.
+player = pygame.transform.scale(player, (40, 40))  # 이미지 크기 조정
+player_rect = player.get_rect()
+player_rect.topleft = (screen_width // 2, screen_height - 70)  # 플레이어 초기 위치
+
+# 적 이미지 로드
+enemy = pygame.image.load('enemy.png')  # 'player.png'는 사용할 이미지 파일의 이름입니다.
+enemy = pygame.transform.scale(enemy, (40, 40))  # 이미지 크기 조정
+enemy_rect = enemy.get_rect()
 
 # 총알 및 적 리스트
 bullets = []
@@ -46,23 +61,24 @@ while running:
 
     # 키 입력
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] and player.left > 0 and alive:
-        player.x -= player_speed
-    if keys[pygame.K_RIGHT] and player.right < screen_width and alive:
-        player.x += player_speed
-    if keys[pygame.K_UP] and player.right > 0 and alive:
-        player.y -= player_speed
-    if keys[pygame.K_DOWN] and player.right < screen_height and alive:
-        player.y += player_speed
+    if keys[pygame.K_LEFT] and player_rect.left > 0 and alive:
+        player_rect.x -= player_speed
+    if keys[pygame.K_RIGHT] and player_rect.right < screen_width and alive:
+        player_rect.x += player_speed
+    if keys[pygame.K_UP] and player_rect.right > 0 and alive:
+        player_rect.y -= player_speed
+    if keys[pygame.K_DOWN] and player_rect.right < screen_height and alive:
+        player_rect.y += player_speed
     if keys[pygame.K_SPACE] and alive:
-        bullet = pygame.Rect(player.centerx - 5, player.top - 10, 3, 3)
+        bullet = pygame.Rect(player_rect.centerx - 5, player_rect.top - 10, 3, 3)
+        pygame.mixer.Sound('shoot.wav').play()
         bullets.append(bullet)
 
     # 적 생성
     if pygame.time.get_ticks() - last_enemy_spawn > enemy_spawn_time:
         enemy_x = random.randint(0, screen_width - 50)
-        enemy = pygame.Rect(enemy_x, 0, 50, 50)
-        enemies.append(enemy)
+        enemy_rect = pygame.Rect(enemy_x, 0, 40, 40)
+        enemies.append(enemy_rect)
         last_enemy_spawn = pygame.time.get_ticks()
 
     # 총알 이동
@@ -72,24 +88,28 @@ while running:
             bullets.remove(bullet)
 
     # 적 이동
-    for enemy in enemies[:]:
-        enemy.y += enemy_speed
-        if enemy.top > screen_height:
-            enemies.remove(enemy)
+    for enemy_rect in enemies[:]:
+        enemy_rect.y += enemy_speed
+        if enemy_rect.top > screen_height:
+            enemies.remove(enemy_rect)
 
     # 충돌 체크
     for bullet in bullets[:]:
-        for enemy in enemies[:]:
-            if bullet.colliderect(enemy):
+        for enemy_rect in enemies[:]:
+            if bullet.colliderect(enemy_rect):
                 bullets.remove(bullet)
-                enemies.remove(enemy)
+                enemies.remove(enemy_rect)
                 score =  score + 10
                 break
 
     # 적 충돌
-    for enemy in enemies[:]:
-        if enemy.colliderect(player):
+    for enemy_rect in enemies[:]:
+        if enemy_rect.colliderect(player_rect):
+            pygame.mixer.music.stop()
             alive = False
+            pygame.mixer.Sound('dead_sound.wav').play()
+            time.sleep(3.8)
+            pygame.quit()
 
 
     # 화면 그리기
@@ -113,11 +133,18 @@ while running:
     score_rect = score_text.get_rect(center=(screen_width - 750, screen_height - 580))
     screen.blit(score_text, score_rect)
 
-    pygame.draw.rect(screen, white, player)
+
+    #pygame.draw.rect(screen, white, player)
     for bullet in bullets:
         pygame.draw.rect(screen, white, bullet)
-    for enemy in enemies:
-        pygame.draw.rect(screen, white, enemy)
+    for enemy_rect in enemies:
+        screen.blit(enemy, enemy_rect)
+        #pygame.draw.rect(screen, white, enemy_rect)
+
+    #screen.fill(black)
+    #screen.blit(player, player_rect)
+
+    screen.blit(player, player_rect)
 
     pygame.display.flip()
     clock.tick(60)
