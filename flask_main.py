@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from extractors.indeed import
+#from extractors.indeed import
 
 app = Flask("JobScraper")
 
