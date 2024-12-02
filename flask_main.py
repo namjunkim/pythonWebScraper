@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-#from extractors.indeed import
+from extract_job import extract_job
 
 app = Flask("JobScraper")
 
@@ -10,8 +10,9 @@ def home():
 @app.route("/search")
 def search():
     keyword = request.args.get("keyword")
+    jobs = extract_job(keyword)
     print(request.args)
-    return render_template("search.html", name="namjun", keyword=keyword)
+    return render_template("search.html", name="namjun", keyword=keyword, jobs=jobs)
 
 
 app.run("0.0.0.0", port="8999")

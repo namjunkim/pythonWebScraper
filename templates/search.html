@@ -13,5 +13,8 @@
     <button>Search</button>
 </form>
     <h1>You want to search for {{keyword}}</h1>
+    {% for job in jobs%}
+        <div>{{job.title}}</div>
+    {% endfor %}
 </body>
 </html>
